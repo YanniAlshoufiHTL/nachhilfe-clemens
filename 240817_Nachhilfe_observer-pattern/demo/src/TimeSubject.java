@@ -1,9 +1,8 @@
-import javax.swing.plaf.IconUIResource;
 import java.time.LocalDateTime;
 import java.util.*;
 
 public class TimeSubject {
-    private final List<Runnable> listeners = new LinkedList<>();
+    private final List<ITimeSubjectListener> listeners = new LinkedList<>();
 
     private int seconds;
     private int minutes;
@@ -31,20 +30,16 @@ public class TimeSubject {
 
     private void fireAll() {
         for (var listener : listeners) {
-            listener.run();
+            listener.provideTime(hours, minutes, seconds);
         }
     }
 
-    public void addListener(Runnable listener) {
+    public void addListener(ITimeSubjectListener listener) {
         if (listener == null) {
             throw new IllegalArgumentException("Listener must not be null!");
         }
 
         listeners.add(listener);
-    }
-
-    public List<Runnable> getListeners() {
-        return listeners;
     }
 
     public int getSeconds() {
