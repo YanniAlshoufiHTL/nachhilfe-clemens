@@ -1,0 +1,11 @@
+2024-08-25 16:56:22.028528+02:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax Fehler in SQL Befehl "UPDATE Todo [*]WHERE id=? SET isdone=?, shortdescription=?, longdescription=?"; erwartet "., AS, SET"
+Syntax error in SQL statement "UPDATE Todo [*]WHERE id=? SET isdone=?, shortdescription=?, longdescription=?"; expected "., AS, SET"; SQL statement:
+UPDATE Todo WHERE id=? SET isdone=?, shortdescription=?, longdescription=? [42001-232]
+2024-08-25 16:57:55.475256+02:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax Fehler in SQL Befehl "UPDATE Todo\000a[*]WHERE id=?\000aSET isdone=? AND shortdescription=? AND longdescription=?\000a"; erwartet "., AS, SET"
+Syntax error in SQL statement "UPDATE Todo\000a[*]WHERE id=?\000aSET isdone=? AND shortdescription=? AND longdescription=?\000a"; expected "., AS, SET"; SQL statement:
+UPDATE Todo
+WHERE id=?
+SET isdone=? AND shortdescription=? AND longdescription=?
+ [42001-232]

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.VBox?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.CheckBox?>
+<VBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="nachhilfe.yanni.todolist.View.UpsertController">
+
+    <CheckBox fx:id="mIsDone" />
+    <TextField fx:id="mShortDescription">short description</TextField>
+    <TextField fx:id="mLongDescription">long description</TextField>
+    <TextField fx:id="mUpsertedLast"> upsertedLast</TextField>
+
+    <Button onAction="#onSubmitBtnClick">Submit</Button>
+
+</VBox>
+
