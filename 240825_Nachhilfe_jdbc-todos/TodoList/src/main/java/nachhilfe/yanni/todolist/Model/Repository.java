@@ -2,11 +2,16 @@ package nachhilfe.yanni.todolist.Model;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import nachhilfe.yanni.todolist.Model.exceptions.CouldNotAddToDatabaseException;
+import nachhilfe.yanni.todolist.Model.exceptions.CouldNotDeleteFromDatabaseException;
+import nachhilfe.yanni.todolist.Model.exceptions.CouldNotUpdateInDatabaseException;
+import nachhilfe.yanni.todolist.Model.exceptions.CouldShutdownDatabaseException;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.*;
 import java.time.LocalDateTime;
-import java.util.Optional;
+import java.util.List;
 
 public class Repository {
 
@@ -20,20 +25,28 @@ public class Repository {
     }
 
     public static Repository getInstance() {
-        if(mAppRepository == null) {
+        if (mAppRepository == null) {
             mAppRepository = new Repository();
         }
 
         return mAppRepository;
     }
 
-    public void initialize() throws SQLException {
-        mConnection = DriverManager.getConnection(Files.exists(Path.of("./db/database.mv.db")) ? getConnectionToDb : getConnectionToNewDb);
-        setTodosFromDatabase();
+    public void initialize() {
+        try {
+            mConnection = DriverManager.getConnection(Files.exists(Path.of("./db/database.mv.db")) ? getConnectionToDb : getConnectionToNewDb);
+            setTodosFromDatabase();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void shutdown() throws SQLException {
-        mConnection.close();
+    public void shutdown() throws Exception {
+        try {
+            mConnection.close();
+        } catch (SQLException e) {
+            throw new CouldShutdownDatabaseException("Database could not be shutdown.");
+        }
     }
 
     public ObservableList<Todo> getTodos() {
@@ -41,11 +54,11 @@ public class Repository {
     }
 
     private void setTodosFromDatabase() throws SQLException {
-        try(PreparedStatement preparedStatement = mConnection.prepareStatement("SELECT * FROM Todo")) {
-            try(ResultSet resultSet = preparedStatement.executeQuery()) {
-                while(resultSet.next()) {
+        try (PreparedStatement preparedStatement = mConnection.prepareStatement("SELECT * FROM Todo")) {
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
                     mList.add(new Todo(
-                                resultSet.getInt("id"),
+                            resultSet.getInt("id"),
                             resultSet.getString("shortdescription"),
                             resultSet.getString("longdescription"),
                             resultSet.getTimestamp("datecreated").toLocalDateTime(),
@@ -56,89 +69,92 @@ public class Repository {
         }
     }
 
-    public void addToTodos(boolean isDone, String shortDescription, String longDescription, LocalDateTime dateTimeOfCreation) throws SQLException {
-        try(PreparedStatement preparedStatement = mConnection.prepareStatement(
+    public void addToTodos(boolean isDone, String shortDescription, String longDescription, LocalDateTime dateOfCreation) throws CouldNotAddToDatabaseException {
+        try (PreparedStatement preparedStatement = mConnection.prepareStatement(
                 """
-                        INSERT INTO Todo(shortdescription, longdescription, isdone, datecreated)
-                        VALUES (?,?,?,?)
-                    """, Statement.RETURN_GENERATED_KEYS)) {
+                            INSERT INTO Todo(shortdescription, longdescription, isdone, datecreated)
+                            VALUES (?,?,?,?)
+                        """, Statement.RETURN_GENERATED_KEYS)) {
 
             preparedStatement.setString(1, shortDescription);
             preparedStatement.setString(2, longDescription);
             preparedStatement.setBoolean(3, isDone);
-            preparedStatement.setTimestamp(4, Timestamp.valueOf(dateTimeOfCreation));
+            preparedStatement.setTimestamp(4, Timestamp.valueOf(dateOfCreation));
 
             preparedStatement.executeUpdate();
 
-            try(ResultSet resultSet = preparedStatement.getGeneratedKeys()) {
-                if(resultSet.next()) {
+            try (ResultSet resultSet = preparedStatement.getGeneratedKeys()) {
+                if (resultSet.next()) {
                     int id = resultSet.getInt("id");
-                    mList.add(new Todo(id, shortDescription, longDescription, dateTimeOfCreation, isDone));
-                }
-                else {
-                    throw new SQLException("id was not found");
+                    mList.add(new Todo(
+                            id,
+                            shortDescription,
+                            longDescription,
+                            dateOfCreation,
+                            isDone
+                    ));
                 }
             }
+
+        } catch (SQLException e) {
+            throw new CouldNotAddToDatabaseException("Todo could not be added to database.");
         }
     }
 
-    public void updateTodo(int id, boolean isDone, String shortDescription, String longDescription) throws SQLException {
+    public void updateTodo(Todo todo) throws CouldNotUpdateInDatabaseException {
 
-        Optional<Todo> optionalTodo = mList.stream().filter(x -> x.getId() == id).findFirst();
-
-        if(optionalTodo.isEmpty()) {
+        if (todo == null) {
             return;
         }
 
-        try(PreparedStatement preparedStatement = mConnection.prepareStatement("""
+        try (PreparedStatement preparedStatement = mConnection.prepareStatement("""
                 UPDATE Todo
                 SET isdone=?, shortdescription=?, longdescription=?
                 WHERE id=?
                 """)) {
 
-            preparedStatement.setBoolean(1, isDone);
-            preparedStatement.setString(2, shortDescription);
-            preparedStatement.setString(3, longDescription);
-            preparedStatement.setInt(4, id);
+            preparedStatement.setBoolean(1, todo.isDone());
+            preparedStatement.setString(2, todo.getShortDescription());
+            preparedStatement.setString(3, todo.getLongDescription());
+            preparedStatement.setInt(4, todo.getId());
 
 
             preparedStatement.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new CouldNotUpdateInDatabaseException("Todo could not be updated in database.");
         }
-
-        Todo todo = optionalTodo.get();
-
-        todo.setShortDescription(shortDescription);
-        todo.setLongDescription(longDescription);
-        todo.setIsDone(isDone);
-
     }
 
-    public void deleteTodo(int id) throws SQLException {
+    public void deleteTodo(Todo todo) throws CouldNotDeleteFromDatabaseException {
 
-        Optional<Todo> optionalTodo = mList.stream().filter(x -> x.getId() == id).findFirst();
-
-        if(optionalTodo.isEmpty()) {
+        if (todo == null) {
             return;
         }
 
-        try(PreparedStatement preparedStatement = mConnection.prepareStatement("DELETE FROM Todo WHERE id=?")) {
-            preparedStatement.setInt(1, id);
-
+        try (PreparedStatement preparedStatement = mConnection.prepareStatement("DELETE FROM Todo WHERE id=?")) {
+            preparedStatement.setInt(1, todo.getId());
             preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            throw new CouldNotDeleteFromDatabaseException("Todo could not be added to database.");
         }
 
-        Todo todo = optionalTodo.get();
-
         mList.remove(todo);
-
     }
 
-//    private <T> List<T> runQuery(String query, Function<ResultSet, T> callback) throws SQLException {
-//        try(PreparedStatement preparedStatement = mConnection.prepareStatement(query)) {
-//            try(ResultSet resultSet = preparedStatement.executeQuery()) {
+    private <E extends Exception> void runUpdateQuery(String query, ThrowingSupplier<PreparedStatement, E> callback) throws E, SQLException {
+        try (PreparedStatement preparedStatement = mConnection.prepareStatement(query)) {
+            callback.supply(preparedStatement);
+        }
+    }
+
+//    private <E extends Exception> void updateOrDelete(String query, ThrowingSupplier<ResultSet, E> callback) throws SQLException {
+//        try (PreparedStatement preparedStatement = mConnection.prepareStatement(query)) {
+//            try (ResultSet resultSet = preparedStatement.executeQuery()) {
 //                while (resultSet.next()) {
-//
+
 //                }
 //            }
 //        }
+//    }
 }

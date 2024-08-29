@@ -9,6 +9,7 @@ import nachhilfe.yanni.todolist.App;
 import nachhilfe.yanni.todolist.Controller.AppController;
 import nachhilfe.yanni.todolist.Model.Repository;
 import nachhilfe.yanni.todolist.Model.Todo;
+import nachhilfe.yanni.todolist.View.exceptions.NothingSelectedException;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -46,7 +47,7 @@ public class TodosController {
             ViewHelper.showWindow(new Stage(), ViewMetaData.UPSERTVIEW, stage);
         }
         else {
-            throw new Error("There is no selected todo.");
+            AppController.getInstance().handleException(new NothingSelectedException("There is no selected todo."));
         }
     }
 
@@ -60,14 +61,13 @@ public class TodosController {
 
     @FXML
     private void deleteTodo(ActionEvent actionEvent) throws SQLException {
-
-
         Todo todo = mTodos.getSelectionModel().getSelectedItem();
+
         if(todo == null) {
-            throw new RuntimeException("Nothing is selected.");
+            AppController.getInstance().handleException(new NothingSelectedException("There is no selected todo."));
         }
 
-        AppController.getInstance().deleteTodo(todo.getId());
+        AppController.getInstance().deleteTodo(todo);
         Repository.getInstance().getTodos().remove(todo);
     }
 }

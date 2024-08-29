@@ -21,7 +21,7 @@ public class Todo {
         mIsDone.set(isDone);
     }
 
-    public int getId() {
+    int getId() {
         return mId;
     }
 
@@ -33,7 +33,7 @@ public class Todo {
         return mShortDescription;
     }
 
-    public void setShortDescription(String shortDescription) {
+    void setShortDescription(String shortDescription) {
         this.mShortDescription.set(shortDescription);
     }
 
@@ -45,7 +45,7 @@ public class Todo {
         return mLongDescription;
     }
 
-    public void setLongDescription(String longDescription) {
+    void setLongDescription(String longDescription) {
         this.mLongDescription.set(longDescription);
     }
 
@@ -57,7 +57,7 @@ public class Todo {
         return mIsDone;
     }
 
-    public void setIsDone(boolean isDone) {
+    void setIsDone(boolean isDone) {
         this.mIsDone.set(isDone);
     }
 
@@ -69,7 +69,7 @@ public class Todo {
         return mDateCreated;
     }
 
-    public void setDateCreated(LocalDateTime dateCreated) {
+    void setDateCreated(LocalDateTime dateCreated) {
         this.mDateCreated.set(dateCreated);
     }
 }

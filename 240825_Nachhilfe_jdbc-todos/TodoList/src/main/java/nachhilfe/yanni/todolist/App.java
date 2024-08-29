@@ -13,7 +13,7 @@ import java.sql.SQLException;
 
 public class App extends Application {
     @Override
-    public void start(Stage stage) throws IOException, SQLException {
+    public void start(Stage stage) throws IOException {
         Repository.getInstance().initialize();
         AppController.getInstance();
         AppView.getInstance().initialize(stage);

@@ -39,7 +39,7 @@ public class UpsertController {
         if(currentTodo == null) {
             AppController.getInstance().addTodo(mShortDescription.getText(), mLongDescription.getText());
         } else {
-            AppController.getInstance().updateTodo(currentTodo.getId() ,mIsDone.isSelected(), mShortDescription.getText(), mLongDescription.getText());
+            AppController.getInstance().updateTodo(currentTodo);
         }
 
         UpsertView.getInstance().setCurrentTodo(null);

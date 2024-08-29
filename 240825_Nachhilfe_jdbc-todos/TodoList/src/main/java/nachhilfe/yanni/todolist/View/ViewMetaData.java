@@ -3,7 +3,6 @@ package nachhilfe.yanni.todolist.View;
 public enum ViewMetaData {
     MAINVIEW("Todos", 500, 500, "todos-view.fxml"),
     UPSERTVIEW("Add/Edit", 400, 400, "upsert-view.fxml")
-
     ;
 
     private final String mTitle;
