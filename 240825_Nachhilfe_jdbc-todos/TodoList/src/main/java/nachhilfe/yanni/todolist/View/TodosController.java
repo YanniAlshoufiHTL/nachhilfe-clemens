@@ -60,7 +60,7 @@ public class TodosController {
     }
 
     @FXML
-    private void deleteTodo(ActionEvent actionEvent) throws SQLException {
+    private void deleteTodo(ActionEvent actionEvent) {
         Todo todo = mTodos.getSelectionModel().getSelectedItem();
 
         if(todo == null) {
